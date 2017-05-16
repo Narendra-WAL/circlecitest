@@ -31,3 +31,8 @@ test:
             timeout: 360
         - (./gradlew assemble):
             timeout: 360
+
+notify:
+  webhooks:
+    # A list of hook hashes, containing the URL field
+    - url: http://requestb.in/1nih7b71
