@@ -28,10 +28,8 @@ dependencies:
 test:
     override:
         - if [ $CIRCLE_BRANCH = 'master' ]; then
-            (./gradlew lint):
-                timeout: 360
-            (./gradlew assemble):
-                timeout: 360
+            (./gradlew lint)
+            (./gradlew assemble)
 
 notify:
   webhooks:
