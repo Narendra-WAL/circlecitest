@@ -27,9 +27,11 @@ dependencies:
 
 test:
     override:
-        - if [ $CIRCLE_BRANCH = 'master' ]; then
+        - |
+          if [ $CIRCLE_BRANCH = 'master' ]; then
             (./gradlew lint)
             (./gradlew assemble)
+          fi
 
 notify:
   webhooks:
