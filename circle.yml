@@ -18,7 +18,16 @@ jobs:
             - ~/.gradle
           key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
       - run:
-          name: Run app
+          name: Run lint
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              ./gradlew lintDebug
+            fi
+      - store_artifacts:
+          path: app/build/reports
+          destination: reports/
+      - run:
+          name: Run build
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               ./gradlew assembleDebug
