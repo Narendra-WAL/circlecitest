@@ -29,7 +29,7 @@ workflows:
 
   build_app:
     jobs:
-      - build-master:
+      - build_master:
           filters:
             branches:
               only:
