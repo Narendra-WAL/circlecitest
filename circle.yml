@@ -1,39 +1,36 @@
-general:
-    artifacts:
-        - /home/ubuntu/circlecitest/app/build/outputs/apk/
-        - /home/ubuntu/circlecitest/app/build/reports/
-
-machine:
+version: 2
+jobs:
+  build_master:
+    working_directory: ~/code
+    docker:
+      - image: circleci/android:api-25-alpha
     environment:
-        ANDROID_HOME: /usr/local/android-sdk-linux
-        GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx2048m -XX:+HeapDumpOnOutOfMemoryError"'
-        _JAVA_OPTIONS: "-Xms512m -Xmx1024m"
+      JVM_OPTS: -Xmx3200m
+    steps:
+      - checkout
+      - restore_cache:
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
+      - run:
+          name: Download Dependencies
+          command: ./gradlew androidDependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "app/build.gradle" }}
+      - run:
+          name: Run app
+          command: ./gradlew assemble
+      - store_artifacts:
+          path: app/build/outputs/apk
+          destination: apks/
 
+workflows:
+  version: 2
 
-dependencies:
-    pre:
-        - echo y | android update sdk --no-ui --all --filter tools,platform-tools,android-25
-        - echo y | android update sdk --no-ui --all --filter build-tools-25.0.2
-        - echo y | android update sdk --no-ui --all --filter android-25
-        - echo y | android update sdk --no-ui --all --filter tools
-        - echo y | android update sdk --no-ui --all --filter extra-android-m2repository
-        - echo y | android update sdk --no-ui --all --filter extra-android-support
-        - echo y | android update sdk --no-ui --all --filter extra-google-google_play_services
-        - echo y | android update sdk --no-ui --all --filter extra-google-m2repository
-        - echo y | $ANDROID_HOME/tools/bin/sdkmanager "extras;m2repository;com;android;support;constraint;constraint-layout-solver;1.0.2"
-    override:
-        - chmod +x gradlew
-        - ANDROID_HOME=/usr/local/android-sdk-linux ./gradlew dependencies
-
-test:
-    override:
-        - |
-          if [ $CIRCLE_BRANCH = 'master' ]; then
-            (./gradlew lint)
-            (./gradlew assemble)
-          fi
-
-notify:
-  webhooks:
-    # A list of hook hashes, containing the URL field
-    - url: http://requestb.in/1nih7b71
+  build_app:
+    jobs:
+      - build-master:
+          filters:
+            branches:
+              only:
+                - master
